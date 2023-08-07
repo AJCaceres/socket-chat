@@ -1,24 +1,27 @@
 var socket = io();
 
-
 var params = new URLSearchParams(window.location.search);
 
-if(!params.has('name') || !params.has('room')){
+if (!params.has('nombre') || !params.has('sala')) {
     window.location = 'index.html';
     throw new Error('El nombre y sala son necesarios');
 }
 
-var user = {
-    name:params.get("name"),
-    room:params.get("room")
-}
+var usuario = {
+    nombre: params.get('nombre'),
+    sala: params.get('sala')
+};
+
+
 
 socket.on('connect', function() {
     console.log('Conectado al servidor');
 
-    socket.emit('enterChat', user, function( resp ){
-        console.log("usuarios conectados", resp)
-    })
+    socket.emit('enterChat', usuario, function(resp) {
+        console.log('Usuarios conectados', resp);
+        renderUsers(resp)
+    });
+
 });
 
 // escuchar
@@ -30,32 +33,28 @@ socket.on('disconnect', function() {
 
 
 // Enviar información
-socket.emit('enviarMensaje', {
-    usuario: 'Fernando',
-    mensaje: 'Hola Mundo'
-}, function(resp) {
-    console.log('respuesta server: ', resp);
-});
-
-// Escuchar información
-socket.on('createMessage', function(mensaje) {
-
-    console.log('Servidor:', mensaje);
-
-});
-// Cuando un usuario entra o sale del chat
-socket.on('personsList', function(persons) {
-    console.log(persons);
-});
-
-// Crear mensaje
 // socket.emit('crearMensaje', {
-//     usuario: 'Fernando',
+//     nombre: 'Fernando',
 //     mensaje: 'Hola Mundo'
 // }, function(resp) {
 //     console.log('respuesta server: ', resp);
 // });
 
-socket.on('privateMessage', function(message){
-    console.log("mensaje privado: ", message)
-})
+// Escuchar información
+socket.on('createMessage', function(mensaje) {
+    renderMessages(mensaje, false)
+    scrollBottom();
+});
+
+// Escuchar cambios de usuarios
+// cuando un usuario entra o sale del chat
+socket.on('personsList', function(personas) {
+    renderUsers(personas)
+});
+
+// Mensajes privados
+socket.on('privateMessage', function(mensaje) {
+
+    console.log('Mensaje Privado:', mensaje);
+
+});

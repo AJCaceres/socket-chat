@@ -8,42 +8,45 @@ io.on('connection', (client) => {
 
     client.on('enterChat', (data, callback) =>{
 
-        
-        if(!data.name || !data.room){
+        console.log("entre al chat ", data.nombre, " ", data.sala)
+        if(!data.nombre || !data.sala){
             return callback({
                 error:true,
                 mensaje:"El nombre/sala es necesario"
             })
         }
-        client.join(data.room);
-        users.addPerson(client.id, data.name, data.room);
+        client.join(data.sala);
+        users.addPerson(client.id, data.nombre, data.sala);
+        client.broadcast.to(data.sala).emit("personsList", users.getPersonsPersala(data.sala));
+        client.broadcast.to(data.sala).emit("createMessage", createMessage('Admin', `${data.nombre} se unió`))
 
-        client.broadcast.to(data.room).emit("personsList", users.getPersonsPerRoom(data.room));
-
-        callback(users.getPersonsPerRoom(data.room))
+        callback(users.getPersonsPersala(data.sala))
     })
 
     client.on('disconnect', () => {
-
+        console.log(users.getPersons())
         let personDeleted = users.deletePerson(client.id);
-
-        client.broadcast.to(personDeleted.room).emit("crearMensaje", createMessage('Admin', `${personDeleted.name} salió`))
-        client.broadcast.to(personDeleted.room).emit("personsList", users.getPersonsPerRoom(personDeleted.room));
+        console.log(personDeleted)
+        client.broadcast.to(personDeleted.sala).emit("createMessage", createMessage('Admin', `${personDeleted.nombre} salió`))
+        client.broadcast.to(personDeleted.sala).emit("personsList", users.getPersonsPersala(personDeleted.sala));
     
     });
 
-    client.on('createMessage', data =>{
+    client.on('createMessage', (data, callback) =>{
+        console.log("DATA ",data)
 
         let person = users.getPerson(client.id);
 
-        let message = createMessage(person.name, data.message);
-        client.broadcast.to(person.room).emit('createMessage', message)
+        let message = createMessage(person.nombre, data.mensaje);
+        client.broadcast.to(person.sala).emit('createMessage', message)
+
+        callback(message)
     })
     // mensajes privados
     client.on('privateMessage', data =>{
         
         let person = users.getPerson(client.id);
-        client.broadcast.to(data.to).emit('privateMessage', createMessage(person.name, data.message));
+        client.broadcast.to(data.to).emit('privateMessage', createMessage(person.nombre, data.mensaje));
 
 
     })

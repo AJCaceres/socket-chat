@@ -8,8 +8,8 @@ class Users{
         this.persons =[];
     }
 
-    addPerson(id, name, room){
-        let person = { id, name, room }
+    addPerson(id, nombre, sala){
+        let person = { id, nombre, sala }
         this.persons.push(person)
 
         return this.persons
@@ -24,9 +24,10 @@ class Users{
         return this.persons
     }
 
-    getPersonsPerRoom(room){
-        let personsInRoom = this.persons.filter(person => person.room === room);
-        return personsInRoom
+    getPersonsPersala(sala){
+        let personsInsala = this.persons.filter(person => person.sala === sala);
+        console.log(personsInsala)
+        return personsInsala
     }
 
     deletePerson(id){
